@@ -89,6 +89,9 @@ ssize_t CSMBFile::Read(void* context, void* lpBuf, size_t uiBufSize)
   if (!ctx || !ctx->pFileHandle || !ctx->pSmbContext)
     return -1;
 
+  if(uiBufSize > 16384)
+    uiBufSize = 16384;
+
   P8PLATFORM::CLockObject lock(CSMBConnection::Get());
   ssize_t numberOfBytesRead = smb2_read(ctx->pSmbContext, ctx->pFileHandle, (uint8_t *)lpBuf, uiBufSize);
 
@@ -239,7 +242,7 @@ bool CSMBFile::Close(void* context)
   P8PLATFORM::CLockObject lock(CSMBConnection::Get());
   CSMBConnection::Get().AddIdleConnection();
 
-  if (!ctx || !ctx->pFileHandle || !ctx->pSmbContext)
+  if (ctx || ctx->pFileHandle || ctx->pSmbContext)
   {
     int ret = 0;
     kodi::Log(ADDON_LOG_DEBUG,"CSMBFile::Close closing file %s", ctx->filename.c_str());
